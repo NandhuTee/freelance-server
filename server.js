@@ -2,35 +2,49 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
+import http from "http";
+import { Server } from "socket.io";
+import { setupSocket } from "./socket.js";
+
 import authRoutes from "./routes/authRoutes.js";
 import gigRoutes from './routes/gigRoutes.js';
 import messageRoutes from "./routes/messageRoutes.js";
-dotenv.config();
-const app = express();
 
-// Middleware
+dotenv.config();
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+  },
+});
+
+// ✅ Setup socket correctly
+setupSocket(io);
+
+// Middlewares
 app.use(cors());
 app.use(express.json());
-app.use('/api/gigs', gigRoutes);
 
 // Routes
+app.use("/api/gigs", gigRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/messages", messageRoutes);
 
 app.get("/", (req, res) => {
   res.send("Freelancer Marketplace API is running 🚀");
 });
 
-app.use("/api/messages", messageRoutes);
-
-// MongoDB connection
+// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
-    app.listen(process.env.PORT, () =>
-      console.log(`🚀 Server running on port ${process.env.PORT}`)
-    );
+    server.listen(process.env.PORT, () => {
+      console.log(`🚀 Server running on port ${process.env.PORT}`);
+    });
   })
-  .catch(err => {
+  .catch((err) => {
     console.error("❌ MongoDB connection failed", err);
   });
-console.log("Mongo URI:", process.env.MONGO_URI);
