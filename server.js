@@ -14,12 +14,22 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
+/*const io = new Server(server, {
   cors: {
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST'],
   },
+});*/
+
+
+const io = new Server(server, {
+  cors: {
+    origin: ["https://freelance-client-bd9n.vercel.app/"],
+    methods: ["GET", "POST"],
+    credentials: true
+  }
 });
+
 
 // ✅ Setup socket correctly
 setupSocket(io);
