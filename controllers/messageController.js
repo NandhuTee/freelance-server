@@ -1,40 +1,32 @@
-// messageController.js
 import Message from '../models/messageModel.js';
 
-// Create a new message
-export const createMessage = async (req, res) => {
+export const sendMessage = async (req, res) => {
   try {
     const { content } = req.body;
     const { senderId, receiverId } = req.params;
 
-    const newMessage = new Message({
-      sender: senderId,
-      receiver: receiverId,
-      content,
-    });
+    const message = new Message({ senderId, receiverId, content });
+    const saved = await message.save();
 
-    const savedMessage = await newMessage.save();
-    res.status(201).json(savedMessage);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Failed to send message', error: error.message });
+    res.status(201).json(saved);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to send message", error: err.message });
   }
 };
 
-// Get all messages between two users
-export const getMessagesBetweenUsers = async (req, res) => {
+export const getMessages = async (req, res) => {
   try {
     const { senderId, receiverId } = req.params;
 
     const messages = await Message.find({
       $or: [
-        { sender: senderId, receiver: receiverId },
-        { sender: receiverId, receiver: senderId }
+        { senderId, receiverId },
+        { senderId: receiverId, receiverId: senderId }
       ]
-    }).sort({ createdAt: 1 });
+    }).sort({ timestamp: 1 });
 
     res.status(200).json(messages);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch messages', error: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch messages", error: err.message });
   }
 };
