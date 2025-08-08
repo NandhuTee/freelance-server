@@ -14,21 +14,18 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://freelancernandhuproject.netlify.app",
+];
+
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
-    methods: ['GET', 'POST'],
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true,
   },
 });
-
-
-/*const io = new Server(server, {
-  cors: {
-    origin: ["https://freelance-client-bd9n.vercel.app/"],
-    methods: ["GET", "POST"],
-    credentials: true
-  }
-});*/
 
 
 // ✅ Setup socket correctly
