@@ -7,8 +7,11 @@ import { Server } from "socket.io";
 import { setupSocket } from "./socket.js";
 
 import authRoutes from "./routes/authRoutes.js";
-import gigRoutes from './routes/gigRoutes.js';
+import gigRoutes from "./routes/gigRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
+import stripeRoutes from "./routes/stripeRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+
 
 dotenv.config();
 
@@ -18,6 +21,15 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://freelancernandhuproject.netlify.app",
 ];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
 
 const io = new Server(server, {
   cors: {
@@ -39,10 +51,14 @@ app.use(express.json());
 app.use("/api/gigs", gigRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/orders", orderRoutes);
 
 app.get("/", (req, res) => {
   res.send("Freelancer Marketplace API is running 🚀");
 });
+
+app.use("/api/stripe", stripeRoutes);
+
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -55,3 +71,7 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((err) => {
     console.error("❌ MongoDB connection failed", err);
   });
+
+  app.get("/", (req, res) => {
+  res.send("API is running");
+});
